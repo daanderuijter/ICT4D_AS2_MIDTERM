@@ -1,10 +1,27 @@
 import datetime
+import requests
 
 from django.db import models
 from django.utils import timezone
+from django.db.models import F, Count
 
-# Create your models here.
+class Topic(models.Model):
+    topic_text = models.CharField(max_length=200)
+    question_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.topic_text
+    
+    def get_wikipedia_article(self):
+        url = "None"
+        r = requests.get("https://en.wikipedia.org/wiki/" + str(self.topic_text))
+        if r.status_code == 200:
+            url = r.url
+        return url
+    get_wikipedia_article.short_description = 'Wiki Page'
+
 class Question(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, blank=True, null=True)
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published')
     

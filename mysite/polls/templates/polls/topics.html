@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>topics</title>
+    {% load static %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
+  </head>
+  <body>
+    <div class="center">
+    <p>
+    The Topics are:
+    </p>
+    {% if topic_list %}
+        <ul>
+        {% for topic in topic_list %}
+            <li>{{ topic.topic_text}} {{topic.question_count}}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No topics are available.</p>
+    {% endif %}
+    <a href="{% url 'polls:index' %}">Back to the questions</a>
+    </div>
+  </body>
+</html>

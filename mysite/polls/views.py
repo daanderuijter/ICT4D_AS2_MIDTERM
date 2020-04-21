@@ -1,10 +1,11 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
+from django.template import loader
 
-from .models import Choice, Question
+from .models import Choice, Question, Topic
 
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
@@ -17,7 +18,14 @@ class IndexView(generic.ListView):
         """
         return Question.objects.filter(
             pub_date__lte=timezone.now()
-        ).order_by('-pub_date')[:5]
+        ).order_by('-pub_date')
+
+class TopicView(generic.ListView):
+    template_name = 'polls/topics.html'
+    context_object_name = 'topic_list'
+    
+    def get_queryset(self):
+        return Topic.objects.all()
 
 class DetailView(generic.DetailView):
     model = Question
@@ -32,6 +40,18 @@ class DetailView(generic.DetailView):
 class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
+
+def topics(request):
+    template = loader.get_template('polls/topics.html')
+    
+    topic_list = Topic.objects.all().order_by('-question_count')
+    context = {'topic_list': topic_list}
+    
+    for topic in topic_list:
+        count = Question.objects.filter(topic__topic_text=topic).count()
+        topic.question_count = count
+        topic.save()
+    return HttpResponse(template.render(context, request))
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
